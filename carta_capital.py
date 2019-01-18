@@ -103,7 +103,7 @@ section = 'politica'
 #     "//div[contains(@class, 'eltdf-bnl-inner')]/div[contains(@class, 'eltdf-pt-three-item')]")
 # getArticles(articles, website, section)
 
-for l in range(836, 1300):
+for l in range(905, 1300):
     data = 'next_page={0}&max_pages=1290&paged={0}&pagination_type=load-more&display_pagination=yes&excerpt_length=70&display_excerpt=yes&display_comments=no&display_author=yes&display_category=no&display_date=yes&thumb_image_size=full&sort=latest&post_not_in=0000&category_id=412&column_number=1&number_of_posts=6&parallax_effect=no&base=eltdf_post_layout_three&action=readanddigest_list_ajax'
     cookies_list = chrome.get_cookies()
     cookies_dict = {}

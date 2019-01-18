@@ -1,3 +1,6 @@
+from time import sleep
+
+import selenium
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from sqlalchemy.exc import IntegrityError
@@ -9,15 +12,13 @@ path_to_firefoxdirver = '/usr/local/bin/geckodriver/geckodriver'
 
 BASEURL = 'http://www.vermelho.org.br/'
 SECTION_URL = 'noticias.php?id_secao=1'
+chrome = None
+website = 'vermelho'
 
-
-# options = webdriver.ChromeOptions()
-# options.add_argument('--ignore-certificate-errors')
-# options.add_argument("--test-type")
-# options.binary_location = path_to_chromedriver
-# driver = webdriver.Chrome(chrome_options=options)
 
 def getArticles(articles, website, n):
+    firefox = webdriver.Chrome(path_to_chromedriver)
+
     for a in articles:
         try:
             section = a.find_element_by_css_selector('span').text
@@ -32,8 +33,28 @@ def getArticles(articles, website, n):
         atag = a.find_element_by_css_selector('a')
         link = atag.get_attribute("href")
         title = atag.get_attribute("title")
-        firefox.get(link)
-        subtitle_author = firefox.find_element_by_xpath("//article/h2").text.split('\n\n')
+        successful = False
+        tries = 0
+        while not successful:
+            print(link)
+            try:
+                firefox.get(link)
+                subtitle_author = firefox.find_element_by_xpath("//article/h2").text.split('\n\n')
+            except:
+                # print str(e)
+                print('timeout. page did not load: ' + link)
+                firefox.close()
+                firefox.quit()
+                firefox = webdriver.Chrome(path_to_chromedriver)
+                sleep(900 * tries)  # sleep for one day
+                tries = tries + 1
+                if tries == 2:
+                    break
+                else:
+                    continue
+
+            successful = True
+
         subtitle = subtitle_author[0]
         if len(subtitle_author) > 1:
             author = subtitle_author[1].replace('*', '').replace('Por ', '')
@@ -48,28 +69,40 @@ def getArticles(articles, website, n):
         try:
             db.session.commit()
             print('success: {0}'.format(n))
-        except IntegrityError:
-            # db.rollback()
+        except:
             print('article already existed')
             db.session.rollback()
             pass
-        #     raise
-        # finally:
-        #     db.session.close()
+
+    firefox.close()
+    firefox.quit()
 
 
-chrome = webdriver.Chrome(path_to_chromedriver)
-# chrome.set_window_position(-2000,0)
-firefox = webdriver.Firefox()
-firefox.set_window_position(-2000,0)
-# chrome.get(BASEURL + SECTION_URL)
-website = 'vermelho'
-# articles = chrome.find_elements_by_xpath("//article")
-# getArticles(articles)
+for l in range(1230, 2505):
+    successful = False
+    tries = 0
+    while not successful:
+        if chrome:
+            chrome.close()
+            chrome.quit()
+        chrome = webdriver.Chrome(path_to_chromedriver)
 
-for l in range(855, 2505):
-    chrome.get('http://www.vermelho.org.br/noticias.php?id_secao=1&lista=sintese&pagina={0}'.format(l))
-    articles = chrome.find_elements_by_xpath("//article")
+        clink = 'http://www.vermelho.org.br/noticias.php?id_secao=1&lista=sintese&pagina={0}'.format(l)
+        print(clink)
+        try:
+            chrome.get(clink)
+        except selenium.common.exceptions.TimeoutException as e:
+            print('timeout. page did not load: ' + clink)
+            sleep(900 * tries)  # sleep for one day
+            tries = tries + 1
+            if tries == 2:
+                break
+            else:
+                continue
+
+        successful = True
+
+    articles = chrome.find_elements_by_xpath("//article[contains(@class, 'categoria_item')]")
     getArticles(articles, website, l)
 
 
