@@ -59,6 +59,8 @@ def getArticles(articles, website, section, n):
             successful = True
 
 
+        if not successful:
+            continue
         content = firefox.find_element_by_xpath("//div[@class='content-section content']").text
 
         articl = Article(website=website, title=title, subtitle=subtitle, author=author, url=link, content=content, publish_date=pdate, publish_time=ptime)
@@ -78,7 +80,7 @@ def getArticles(articles, website, section, n):
 
 
 
-for l in range(143, 1198):
+for l in range(227, 1203):
     successful = False
     tries = 0
     while not successful:
@@ -94,10 +96,7 @@ for l in range(143, 1198):
             print('timeout. page did not load: ' + clink)
             sleep(900 * tries)  # sleep for one day
             tries = tries + 1
-            if tries == 2:
-                break
-            else:
-                continue
+            continue
 
         successful = True
 

@@ -39,7 +39,10 @@ def getArticles(articles, website, n):
             print(link)
             try:
                 firefox.get(link)
-                subtitle_author = firefox.find_element_by_xpath("//article/h2").text.split('\n\n')
+                if firefox.find_element_by_xpath("//body").text == '':
+                    break
+                else:
+                    subtitle_author = firefox.find_element_by_xpath("//article/h2").text.split('\n\n')
             except:
                 # print str(e)
                 print('timeout. page did not load: ' + link)
@@ -55,6 +58,8 @@ def getArticles(articles, website, n):
 
             successful = True
 
+        if not successful:
+            continue
         subtitle = subtitle_author[0]
         if len(subtitle_author) > 1:
             author = subtitle_author[1].replace('*', '').replace('Por ', '')
@@ -78,7 +83,7 @@ def getArticles(articles, website, n):
     firefox.quit()
 
 
-for l in range(1230, 2505):
+for l in range(1516, 2505):
     successful = False
     tries = 0
     while not successful:
@@ -95,10 +100,7 @@ for l in range(1230, 2505):
             print('timeout. page did not load: ' + clink)
             sleep(900 * tries)  # sleep for one day
             tries = tries + 1
-            if tries == 2:
-                break
-            else:
-                continue
+            continue
 
         successful = True
 
