@@ -27,19 +27,12 @@ def getArticles(firefox, articles, website, section, n):
     narticles = 0
     for a in articles:
         narticles = narticles + 1
-        try:
-            entry = a.find_element_by_class_name("entry-content")
-            header = entry.find_element_by_tag_name('header')
-        except:
-            continue
-
-        tagtitle = header.find_element_by_tag_name('h3')
-        title = tagtitle.text
-        entrydate = header.find_element_by_class_name("entry-date")
-        pdatetime = entrydate.text.split(' de ')
-
-        link = tagtitle.find_element_by_tag_name('a').get_attribute("href")
-        print(link)
+        h2 = a.find_element_by_class_name("entry-title")
+        h2a = h2.find_element_by_tag_name("a")
+        title = h2a.text
+        link = h2a.get_attribute("href")
+        entrymeta = a.find_element_by_xpath("//div[@class='entry-meta']")
+        pdatetime = entrymeta.find_element_by_class_name('datetime').text.replace("'", '').split(' ')
         day = pdatetime[0]
         month_abrev = pdatetime[1][:3].lower()
         month_number = list(calendar.month_abbr).index(month_abrev)
@@ -47,21 +40,23 @@ def getArticles(firefox, articles, website, section, n):
         pdate = '{0}/{1}/{2}'.format(day, month_number, year)
         ptime = None
 
+        author = entrymeta.find_element_by_class_name('author').text
+
         subtitle = a.find_element_by_xpath("//div[@class='entry-content']/p").text
         successful = False
         tries = 0
 
         while not successful:
-
+            print(link)
             try:
                 if tries > 0:
                     firefox.refresh()
-                    if firefox.find_element_by_xpath("//div[@id='article-text']"):
+                    if firefox.find_element_by_xpath("//article']"):
                         successful = True
-                        content = firefox.find_element_by_xpath("//div[@id='article-text']").text
+                        content = firefox.find_element_by_xpath("//div[@class='entry-content']").text
                         break
                 firefox.get(link)
-                content = firefox.find_element_by_xpath("//div[@id='article-text']").text
+                content = firefox.find_element_by_xpath("//div[@class='entry-content']").text
             except:
                 print('timeout. page did not load: ' + link)
                 # firefox.close()
@@ -76,19 +71,10 @@ def getArticles(firefox, articles, website, section, n):
 
             successful = True
 
-
         if not successful:
             continue
-        try:
-            author = firefox.find_element_by_xpath("//em").text
-        except:
-            author = None
-            pass
 
-
-        if author:
-            content = content.replace(author, '')
-        articl = Article(website=website, title=title, subtitle=subtitle, author=author, url=link, content=content, publish_date=pdate, publish_time=ptime)
+        articl = Article(website=website, title=title, subtitle=subtitle, author=author, url=link, content=content, publish_date=pdate, publish_time=ptime, section=section)
 
         db.session.add(articl)
 
@@ -104,16 +90,16 @@ def getArticles(firefox, articles, website, section, n):
     # firefox.quit()
 
 
-website = 'gazetadopovo'
-section = 'blog_rodrigo_constantino'
+website = 'institutoliberal'
+section = 'blog'
 
-def scrapy(url, urllogin):
+def scrapy(url):
     chrome = webdriver.Chrome(path_to_chromedriver)
 
     firefox = webdriver.Chrome(path_to_chromedriver)
-    firefox.get(urllogin)
+    # firefox.get(url)
 
-    for l in range(155, 1074):
+    for l in range(48, 189):
         successful = False
         tries = 0
         while not successful:
@@ -133,4 +119,4 @@ def scrapy(url, urllogin):
         getArticles(firefox, articles, website, section, l)
 
 
-scrapy('https://www.gazetadopovo.com.br/rodrigo-constantino/', 'https://www.gazetadopovo.com.br/rodrigo-constantino/artigos/governo-recua-e-suspende-nomeacao-de-diretor-controverso-para-comandar-enem-fez-bem/')
+scrapy('https://www.institutoliberal.org.br/blog/')

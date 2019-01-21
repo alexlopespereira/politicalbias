@@ -83,7 +83,7 @@ def getArticles(articles, website, n):
     firefox.quit()
 
 
-for l in range(1516, 2505):
+for l in range(2001, 2505):
     successful = False
     tries = 0
     while not successful:

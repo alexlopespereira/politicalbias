@@ -80,7 +80,7 @@ def getArticles(articles, website, section, n):
 
 
 
-for l in range(227, 1203):
+for l in range(381, 1203):
     successful = False
     tries = 0
     while not successful:
