@@ -113,7 +113,7 @@ def scrapy(url, urllogin):
     firefox = webdriver.Chrome(path_to_chromedriver)
     firefox.get(urllogin)
 
-    for l in range(155, 1074):
+    for l in range(300, 1074):
         successful = False
         tries = 0
         while not successful:
